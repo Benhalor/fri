@@ -45,11 +45,11 @@ def read_id(filename):
 
 def read_all(filename):
     with open(filename) as f:
-        d = dict()
+        docs = dict()
         for line in f:
             l = line.split(' ')
-            d[l[0].strip("\n")] = l[1]
-    return d
+            docs[int(l[0].strip("\n"))] = l[1].strip("\n")
+    return docs
 
 
 def maximum_frequency(d):
@@ -58,20 +58,29 @@ def maximum_frequency(d):
         L.append(value)
     return max(L)
 
+
 def sum_frequency(d):
     L = []
     for key, value in d.items():
         L.append(value)
     return sum(L)
 
+
 def colorize(document, query):
     for word in query:
         document = re.sub(word, Fore.RED + word + Fore.WHITE, document, flags=re.IGNORECASE)
     return document
 
+def read_document_inline(filename):
+    output = ""
+    with open(filename) as f:
+        for line in f:
+            output += line
+    return output
 
 def tf_idf():
     # Read postings and ID and docs
+    print("Loading documents...")
     postings = read_posting(root_folder + posting_filename)
     id = read_id(root_folder + id_filename)
     docs = read_all(root_folder + docs_filename)
@@ -97,20 +106,22 @@ def tf_idf():
             else:
                 # postings[termID][document_id] = weight > 0  # binary
                 postings[termID][document_id] = weight  # Raw count
-                #postings[termID][document_id] = weight / sum_frequency(document_terms[document_id])  # term frequency
+                # postings[termID][document_id] = weight / sum_frequency(document_terms[document_id])  # term frequency
                 # postings[termID][document_id] = 1 + math.log10(weight)  # Log normalization
-                #postings[termID][document_id] = 0.5 + 0.5*weight/maximum_frequency(document_terms[document_id])  # double normalization 0.5
+                # postings[termID][document_id] = 0.5 + 0.5*weight/maximum_frequency(document_terms[document_id])  # double normalization 0.5
 
     number_of_document = len(counter.items())
 
+    print("Calculating IDF")
     # Calculate IDF
     for termID, value in idf.items():
         # idf[termID] = 1  # Unary
-        #idf[termID] = 1/value  # Inverse
+        # idf[termID] = 1/value  # Inverse
         idf[termID] = math.log10(number_of_document / value)  # inverse document frequency
         # idf[termID] = math.log10(number_of_document / (1 + value))  # inverse document frequency smooth
-        #idf[termID] = math.log10((number_of_document - value) / value)  # probabilistic inverse document frequency
+        # idf[termID] = math.log10((number_of_document - value) / value)  # probabilistic inverse document frequency
 
+    print("Calculating TF x IDF")
     # Calculate TF * IDF and place it in the weight of the postings
     for key, value in postings.items():
         idf[key] = len(value)
@@ -122,6 +133,7 @@ def tf_idf():
                 # weight = TF
                 postings[key][document_id] = weight * idf[document_id]
 
+    print("Calculating normalization factors")
     # Calculate normalization factor for all documents
     for key, value in postings.items():
         for document_id, weight in value.items():
@@ -129,6 +141,8 @@ def tf_idf():
                 normalization_dictionary[document_id] = 0
             normalization_dictionary[document_id] += weight * weight
     return number_of_document, postings, normalization_dictionary, docs, id
+
+
 
 
 def process_query(query, number_of_document, tfidf, normalization_dictionary, docs, id, number_of_output,
@@ -163,7 +177,7 @@ def process_query(query, number_of_document, tfidf, normalization_dictionary, do
     # Calculate similarity with request for each document
     score = dict()
     nq = 0
-    score = {i: 0 for i in range(1, number_of_document + 1)}
+    score = {i: 0 for i in range(0, number_of_document)}
     for id_word, query_weight in query_list.items():
         nq += query_weight * query_weight
         for document_id, document_weight in tfidf[id_word].items():
@@ -173,11 +187,11 @@ def process_query(query, number_of_document, tfidf, normalization_dictionary, do
     for i, value in score.items():
         score[i] = score[i] / (math.sqrt(normalization_dictionary[i]) * math.sqrt(nq))
 
-    output = sorted(range(1, len(score) + 1), key=lambda i: score[i], reverse=True)
+    output = sorted(range(len(score)), key=lambda i: score[i], reverse=True)
     output_score = sorted(score, reverse=True)
     for i in range(number_of_output):
         answer.append({"doc_number": output[i], "score": output_score[i], "normalization":
-            normalization_dictionary[output[i]], "text": docs[output[i]]})
+            normalization_dictionary[output[i]], "text": read_document_inline(docs[output[i]])})
     if return_color:
         return answer, query_for_colorization
     else:
@@ -186,7 +200,7 @@ def process_query(query, number_of_document, tfidf, normalization_dictionary, do
 
 if __name__ == "__main__":
     number_of_document, tfidf, normalization_dictionary, docs, id = tf_idf()
-    query = input("Enter query: ")
+    query = "world"  # input("Enter query: ")
     answer, query_for_colorization = process_query(query, number_of_document, tfidf, normalization_dictionary, docs, id,
                                                    20, return_color=True)
     for line in answer:

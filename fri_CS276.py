@@ -132,7 +132,7 @@ for folder in subfolders:
     print(folder)
     posting = dict()  # {id : {docID : occurences} }
     for file_name in os.listdir(folder):
-        """with open(folder + "/" + file_name) as f:
+        with open(folder + "/" + file_name) as f:
             for word in f.read().strip().split(" "):
                 w = word.lower()
                 if w not in stop_set:
@@ -143,21 +143,21 @@ for folder in subfolders:
                         posting[term_id[w]] = dict()
                     if docID not in posting[term_id[w]]:
                         posting[term_id[w]][docID] = 0
-                    posting[term_id[w]][docID] += 1"""
+                    posting[term_id[w]][docID] += 1
         docs[docID] = folder + '/' + file_name
         docID += 1
-    """with open("pa1-data/CS276_posting" + folder[-1] + ".txt", 'w') as f:
+
+    with open("pa1-data/CS276_posting" + folder[-1] + ".txt", 'w') as f:
         for termID in sorted(list(posting)):
             di = posting[termID]
             f.write(str(termID) + ':')
             for docID, occ in di.items():
                 f.write(' ' + str(docID) + ' ' + str(occ))
-            f.write('\n')"""
+            f.write('\n')
 
-"""
 with open("pa1-data/CS276_ids.txt", 'w') as f:
     for w,i in term_id.items():
-        f.write(w + ' ' + str(i) + '\n')"""
+        f.write(w + ' ' + str(i) + '\n')
 
 with open("pa1-data/CS276_doc_ids.txt", 'w') as f:
     for i, p in docs.items():
