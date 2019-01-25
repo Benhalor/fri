@@ -13,10 +13,10 @@ import re
 import time
 
 BLOCK_SIZE = 1024
-root_folder = "CACM/"
+root_folder = "pa1-data/"
 posting_filename = "output.txt"
-id_filename = "cacm_ids.txt"
-docs_filename = "cacm.all"
+id_filename = "CS276_ids.txt"
+docs_filename = "CS276_doc_ids.txt"
 
 
 def read_posting(filename):
@@ -45,22 +45,11 @@ def read_id(filename):
 
 def read_all(filename):
     with open(filename) as f:
-        docs = dict()
-        to_read = (".T", ".W", ".K")
-        to_ignore = (".B", ".A", ".N", ".X")
-        current_marker = ""
-
+        d = dict()
         for line in f:
-            if len(line) > 1 and line[0:2] == ".I":
-                i = int(line.replace(".I", ""))
-                docs[i] = {".T": "", ".W": "", ".K": ""}
-            elif len(line) > 1 and line[0:2] in to_ignore:
-                current_marker = ""
-            elif len(line) > 1 and line[0:2] in to_read:
-                current_marker = line[0:2]
-            elif current_marker:
-                docs[i][current_marker] += line
-    return docs
+            l = line.split(' ')
+            d[l[0].strip("\n")] = l[1]
+    return d
 
 
 def maximum_frequency(d):
@@ -92,12 +81,12 @@ def tf_idf():
     document_terms = dict()
 
     # Calculate term frequency normalization. Used only when using normalization on TF
-    for key, value in postings.items():
+    """for key, value in postings.items():
         for document_id, weight in value.items():
             if document_id not in document_terms:
                 document_terms[document_id] = {}
-            document_terms[document_id][key] = weight
-
+            document_terms[document_id][key] = weight"""
+    print("Calculating TF")
     # Calculate TF and place it in the weight of the postings
     for termID, term_posting in postings.items():
         idf[termID] = len(term_posting)
@@ -107,8 +96,8 @@ def tf_idf():
                 postings[termID][document_id] = 0
             else:
                 # postings[termID][document_id] = weight > 0  # binary
-                # postings[termID][document_id] = weight  # Raw count
-                postings[termID][document_id] = weight / sum_frequency(document_terms[document_id])  # term frequency
+                postings[termID][document_id] = weight  # Raw count
+                #postings[termID][document_id] = weight / sum_frequency(document_terms[document_id])  # term frequency
                 # postings[termID][document_id] = 1 + math.log10(weight)  # Log normalization
                 #postings[termID][document_id] = 0.5 + 0.5*weight/maximum_frequency(document_terms[document_id])  # double normalization 0.5
 
@@ -117,7 +106,7 @@ def tf_idf():
     # Calculate IDF
     for termID, value in idf.items():
         # idf[termID] = 1  # Unary
-        idf[termID] = 1/value  # Inverse
+        #idf[termID] = 1/value  # Inverse
         idf[termID] = math.log10(number_of_document / value)  # inverse document frequency
         # idf[termID] = math.log10(number_of_document / (1 + value))  # inverse document frequency smooth
         #idf[termID] = math.log10((number_of_document - value) / value)  # probabilistic inverse document frequency

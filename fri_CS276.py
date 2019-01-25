@@ -10,13 +10,13 @@ import os
 import math
 import matplotlib.pyplot as plt
 
-#%% Stop list
+# %% Stop list
 
 from nltk.corpus import stopwords
+
 stop_set = set(stopwords.words('english'))
 
-
-#%% Parsing (tokenization is already done)
+# %% Parsing (tokenization is already done)
 """
 def parsing(foo, half = False):
     subfolders = [f.path for f in os.scandir("pa1-data") if f.is_dir()]
@@ -50,7 +50,7 @@ def co(docID, path, word):
         if word not in freq:
             freq[word] = 0
         freq[word] += 1
-    
+
 parsing(co)
 print("Nombre de tokens dans CS276 :", token_count)
 print("Nombre de tokens dans CS276 filtré :", filtered_count)
@@ -70,7 +70,7 @@ def co_half(docID, path, word):
     if word not in stop_set:
         filtered_half_count += 1
         voc_half.add(word)
-    
+
 parsing(co_half, half = True)
 print("Nombre de tokens dans la moitié de CS276 :", token_half_count)
 print("Nombre de tokens dans la moitié de CS276 filtré :", filtered_half_count)
@@ -120,17 +120,17 @@ plt.title("CS276 : Graphe log(fréquence) vs log(Rang)")
 plt.show()
 """
 
-#%% Indexation and file writing
+# %% Indexation and file writing
 
-term_id = dict() # {word : id}
-docs = dict() # {docID : path}
+term_id = dict()  # {word : id}
+docs = dict()  # {docID : path}
 i = 0
 
 subfolders = [f.path for f in os.scandir("pa1-data") if f.is_dir()]
 docID = 0
 for folder in subfolders:
     print(folder)
-    posting = dict() # {id : {docID : occurences} }
+    posting = dict()  # {id : {docID : occurences} }
     for file_name in os.listdir(folder):
         """with open(folder + "/" + file_name) as f:
             for word in f.read().strip().split(" "):
@@ -158,10 +158,29 @@ for folder in subfolders:
 with open("pa1-data/CS276_ids.txt", 'w') as f:
     for w,i in term_id.items():
         f.write(w + ' ' + str(i) + '\n')"""
-        
+
 with open("pa1-data/CS276_doc_ids.txt", 'w') as f:
     for i, p in docs.items():
-        f.write(str(i) + ' ' + p)
+        pp = p.replace("\\", "/")
+        f.write(str(i) + ' ' + pp + '\n')
+
+
+# %% Read functions
+
+def read_term_ids(f):
+    d = dict()
+    for line in f:
+        l = line.split(' ')
+        d[l[0]] = int(l[1])
+    return d
+
+
+def read_doc_ids(f):
+    d = dict()
+    for line in f:
+        l = line.split(' ')
+        d[int(l[0])] = l[1]
+    return d
 
 
 

@@ -46,6 +46,43 @@ def calculate_number_of_relevant_documents(guess, expected):
     return count
 
 
+# E-Measure (van Rijsbergen)
+def calculate_e_measure(precision_list, rappel_list):
+    output = []
+    for i in range(len(precision_list)):
+        P = precision_list[i]
+        R = rappel_list[i]
+        beta = P / R
+        output.append(1 - ((beta * beta + 1) * P * R) / (beta * beta * P + R))
+    return np.mean(output)
+
+
+# F-Measure (van Rijsbergen)
+def calculate_f_measure(precision_list, rappel_list):
+    output = []
+    for i in range(len(precision_list)):
+        P = precision_list[i]
+        R = rappel_list[i]
+        output.append((2 * P * R) / (P + R))
+    return np.mean(output)
+
+
+# Average mean precision
+def calculate_average_mean_precision(precision, rappel):
+    # precision[k][query] k=NUMBER_OF_RETURNED_DOCUMENTS, query = query index
+    query_index = 0
+    MAP = 0
+    for query_index in range(len(precision[0])):
+        average_precision = 0
+        last_rappel = 0
+        for k in range(len(precision)):
+            delta_rappel = rappel[k][query_index] - last_rappel
+            average_precision += precision[k][query_index] * delta_rappel
+            last_rappel = rappel[k][query_index]
+        MAP += average_precision
+    return MAP / len(precision[0])
+
+
 queries = read_queries(root_folder + query_filename)
 queries = read_answer(root_folder + query_answer_filename, queries)
 
@@ -54,6 +91,8 @@ number_of_document, tfidf, normalization_dictionary, docs, id = fri_cacm_vectori
 print("Duration for building index : " + str((time.time() - last_time) * 1000) + " ms")
 rappel_list = []
 precision_list = []
+rappel_list_full = []
+precision_list_full = []
 query_duration_list = []
 
 for NUMBER_OF_RETURNED_DOCUMENTS in range(1, 30):
@@ -81,8 +120,15 @@ for NUMBER_OF_RETURNED_DOCUMENTS in range(1, 30):
             precision_list_temp.append(precision)
     rappel_list.append(np.mean(rappel_list_temp))
     precision_list.append(np.mean(precision_list_temp))
+    rappel_list_full.append(rappel_list_temp)
+    precision_list_full.append(precision_list_temp)
 
 print("Mean duration for one request: " + str(1000 * np.mean(query_duration_list)) + " ms")
+print("E-Measure = " + str(calculate_e_measure(precision_list, rappel_list)))
+print("F-Measure = " + str(calculate_f_measure(precision_list, rappel_list)))
+print("MAP = " + str(calculate_average_mean_precision(precision_list_full, rappel_list_full)))
+
+
 plt.plot(precision_list, rappel_list)
 plt.xlabel("Rappel")
 plt.ylabel("Precision")
