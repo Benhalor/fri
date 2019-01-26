@@ -52,7 +52,7 @@ def calculate_e_measure(precision_list, rappel_list):
     for i in range(len(precision_list)):
         P = precision_list[i]
         R = rappel_list[i]
-        beta = P / R
+        beta = 1
         output.append(1 - ((beta * beta + 1) * P * R) / (beta * beta * P + R))
     return np.mean(output)
 
