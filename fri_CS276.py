@@ -7,6 +7,7 @@ Created on Mon Jan  7 08:46:08 2019
 """
 
 import os
+import time
 import math
 import matplotlib.pyplot as plt
 
@@ -145,14 +146,14 @@ for folder in subfolders:
                         posting[term_id[w]][docID] = 0
                     posting[term_id[w]][docID] += 1
         docs[docID] = folder + '/' + file_name
-        docID += 1
+        docID = docID + 1
 
     with open("pa1-data/CS276_posting" + folder[-1] + ".txt", 'w') as f:
         for termID in sorted(list(posting)):
             di = posting[termID]
             f.write(str(termID) + ':')
-            for docID, occ in di.items():
-                f.write(' ' + str(docID) + ' ' + str(occ))
+            for docID_it, occ in di.items():
+                f.write(' ' + str(docID_it) + ' ' + str(occ))
             f.write('\n')
 
 with open("pa1-data/CS276_ids.txt", 'w') as f:
